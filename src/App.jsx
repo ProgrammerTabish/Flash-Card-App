@@ -36,19 +36,22 @@ const App = () => {
   const handleRemoveWord = () => {
     const updatedWords = learningWords.filter((_, index) => index !== currentIndex);
     setLearningWords(updatedWords);
-    setCurrentIndex(Math.floor(Math.random() * learningWords.length));
+    setCurrentIndex(Math.floor(Math.random() * updatedWords.length)); // Update index with new length
     setFlipped(false);
   };
 
   const handleAddWords = () => {
-    const newWordsArray = newWordsInput
-      .split(",") // Split by comma for each word:meaning pair
-      .map((pair) => {
-        const [word, meaning] = pair.split(":").map((item) => item.trim());
-        return { word, meaning };
-      });
+    try {
+      const newWordsArray = JSON.parse(newWordsInput); // Parse the JSON input
+      if (Array.isArray(newWordsArray)) {
+        setLearningWords((prevWords) => [...prevWords, ...newWordsArray]); // Append new words to the existing array
+      } else {
+        alert("Invalid JSON format. Please provide an array of objects.");
+      }
+    } catch (error) {
+      alert("Error parsing JSON: " + error.message); // Alert if JSON is invalid
+    }
 
-    setLearningWords(newWordsArray); // Replace the old words with the new ones
     setNewWordsInput(""); // Clear the input box
     setCurrentIndex(0); // Reset index
     setFlipped(false); // Ensure card is not flipped
@@ -56,9 +59,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-  <div className="mt-4 text-lg text-gray-700">
-  Remaining Words: {learningWords.length}
-</div>
+      <div className="mt-4 text-lg text-gray-700">
+        Remaining Words: {learningWords.length}
+      </div>
       <div
         className="relative w-80 h-40 cursor-pointer perspective"
         onClick={handleFlip}
@@ -109,7 +112,7 @@ const App = () => {
           type="text"
           value={newWordsInput}
           onChange={(e) => setNewWordsInput(e.target.value)}
-          placeholder="Enter words as word:meaning, word2:meaning"
+          placeholder='Enter words as [{"word": "word1", "meaning": "meaning1"}, {"word": "word2", "meaning": "meaning2"}]'
           className="border px-4 py-2 w-80 mb-2"
         />
         <button
