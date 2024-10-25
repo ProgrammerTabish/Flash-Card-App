@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const App = () => {
   const [learningWords, setLearningWords] = useState([
@@ -25,11 +25,11 @@ const App = () => {
   };
 
   const handleFlip = () => {
-    setFlipped(!flipped);
+    setFlipped((prev) => !prev); // Flip the card
   };
 
   const handleNextWord = () => {
-    setFlipped(false);
+    setFlipped(false); // Reset flip state when moving to next word
     setCurrentIndex(Math.floor(Math.random() * learningWords.length));
   };
 
@@ -37,14 +37,14 @@ const App = () => {
     const updatedWords = learningWords.filter((_, index) => index !== currentIndex);
     setLearningWords(updatedWords);
     setCurrentIndex(Math.floor(Math.random() * updatedWords.length)); // Update index with new length
-    setFlipped(false);
+    setFlipped(false); // Reset flip state
   };
 
   const handleAddWords = () => {
     try {
       const newWordsArray = JSON.parse(newWordsInput); // Parse the JSON input
       if (Array.isArray(newWordsArray)) {
-        setLearningWords((prevWords) => [...prevWords, ...newWordsArray]); // Append new words to the existing array
+        setLearningWords(() => [...newWordsArray]); // Add new words to the array
       } else {
         alert("Invalid JSON format. Please provide an array of objects.");
       }
@@ -56,6 +56,26 @@ const App = () => {
     setCurrentIndex(0); // Reset index
     setFlipped(false); // Ensure card is not flipped
   };
+
+  // Use effect to add keyboard listeners
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowRight") {
+        handleNextWord();
+      } else if (event.key === "Arrow") {
+        handleRemoveWord();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault(); // Prevent page scroll on space
+        setFlipped((prevFlipped) => !prevFlipped); // Flip back if already flipped
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
